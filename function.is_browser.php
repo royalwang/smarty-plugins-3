@@ -17,45 +17,47 @@
  * @date 10.3.2013
  * @author vcalaelen@gmail.com
  */
+
 function smarty_function_is_browser($params, &$smarty) {
-	//If the user hasn't stated any parameters
-	if (empty($params)) {
-		return;
-	}
+    //If the user hasn't stated any parameters
+    if (empty($params)) {
+        return;
+    }
+    $var = $params['assign'];
 
-	//The system doesn't cover the requirements needed
-	// if (!get_cfg_var('get_cfg_var')) {
-	// 	return get_from_browsecap($params);
-	// }
-	//Else do the things manually
-	
-	if (isset($_SERVER['HTTP_USER_AGENT']) || $_SERVER['HTTP_USER_AGENT'] != "") {
-		$user_agent = $_SERVER['HTTP_USER_AGENT'];
-	} else {
-		$user_agent = 'Unknown';
-	}
+    //The system doesn't cover the requirements needed
+    // if (!get_cfg_var('get_cfg_var')) {
+    //  return get_from_browsecap($params);
+    // }
+    //Else do the things manually
+    
+    if (isset($_SERVER['HTTP_USER_AGENT']) || $_SERVER['HTTP_USER_AGENT'] != "") {
+        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    } else {
+        $user_agent = 'Unknown';
+    }
 
-	$name = 'unknown';
-	$version = '0';
+    $name = 'unknown';
+    $version = '0';
 
-	/**
-	 * @todo There was a way to this with two array, but im too lazy right now 
-	 */
-	if (preg_match('~MSIE~', $user_agent)) {
-		$name = 'msie';
-		$ub = 'msie';
-	} elseif (preg_match('~Firefox~', $user_agent)) {
-		$name = 'firefox';
-	} elseif (preg_match('~Chrome~', $user_agent)) {
-		$name = 'chrome';
-	} elseif (preg_match('~Safari~', $user_agent)) {
-		$name = 'safari';
-	} elseif (preg_match('~Opera~', $user_agent)) {
-		$name = 'opera';
-	}
+    /**
+     * @todo There was a way to this with two array, but im too lazy right now 
+     */
+    if (preg_match('~MSIE~', $user_agent)) {
+        $name = 'msie';
+        $ub = 'msie';
+    } elseif (preg_match('~Firefox~', $user_agent)) {
+        $name = 'firefox';
+    } elseif (preg_match('~Chrome~', $user_agent)) {
+        $name = 'chrome';
+    } elseif (preg_match('~Safari~', $user_agent)) {
+        $name = 'safari';
+    } elseif (preg_match('~Opera~', $user_agent)) {
+        $name = 'opera';
+    }
 
-	//Getting the version of the browser
-	$known = array('Version', $ub, 'other');
+    //Getting the version of the browser
+    $known = array('Version', $ub, 'other');
     $pattern = '#(?<browser>' . join('|', $known) .
             ')[/ ]+(?<version>[0-9.|a-zA-Z.]*)#i';
     if (!preg_match_all($pattern, $user_agent, $matches)) {
@@ -102,40 +104,44 @@ function smarty_function_is_browser($params, &$smarty) {
         'os2' => 'OS\/2',
         'searchbot' => '(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)'
     );
-	$os = '';
+    $os = '';
     // $user_agent = strtolower($user_agent);
     foreach ($oses as $temp_os => $pattern) {
-    	if (preg_match('/' . $pattern . '/i', $user_agent)) {
-    		$os = $temp_os;
-    	}
+        if (preg_match('/' . $pattern . '/i', $user_agent)) {
+            $os = $temp_os;
+        }
     }
 
     $data = array(
-    	'name' => isset($params['name']) ? $params['name'] : $name,
-    	'version' => isset($params['version']) ? $params['version'] : $version,
-    	'os' => isset($params['os']) ? $params['os'] : $os
+        'name' => isset($params['name']) ? $params['name'] : $name,
+        'version' => isset($params['version']) ? $params['version'] : $version,
+        'os' => isset($params['os']) ? $params['os'] : $os
     );
 
     $data = array_filter($data, 'strtolower');
-    
-    return ($data['name'] == $name) &&
-    	   ($data['version'] == $version) &&
-    	   ($data['os'] == $os);
+    $result = false;
+    if( ($data['name'] == $name) &&
+           ($data['version'] == $version) &&
+           ($data['os'] == $os) ) {
+        $result = true;
+    }
+
+    $smarty->assign($var, $result);
 }
 
 //If PHP defined browsecap
 function get_from_browsecap($params) {
-	@$current_browser = get_browser();
-	$data = array(
-		'version' => isset($params['version']) ? $params['version'] : $current_browser->version,
-		'name' => isset($params['name']) ? $params['name'] : $current_browser->name,
-		'os' => isset($params['os']) ? $params['os'] : $current_browser->os 
-	);
+    @$current_browser = get_browser();
+    $data = array(
+        'version' => isset($params['version']) ? $params['version'] : $current_browser->version,
+        'name' => isset($params['name']) ? $params['name'] : $current_browser->name,
+        'os' => isset($params['os']) ? $params['os'] : $current_browser->os 
+    );
 
-	//Make all data to lowercase
-	$data = array_filter($data, 'strtolower');
+    //Make all data to lowercase
+    $data = array_filter($data, 'strtolower');
 
-	return ($data['name'] == strtolower($current_browser->name)) &&
-		   ($data['version'] == strtolower($current_browser->version)) && 
-		   ($data['os'] == strtolower($current_browser->platform));
+    return ($data['name'] == strtolower($current_browser->name)) &&
+           ($data['version'] == strtolower($current_browser->version)) && 
+           ($data['os'] == strtolower($current_browser->platform));
 }
