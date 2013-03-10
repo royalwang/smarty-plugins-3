@@ -1,0 +1,4 @@
+smarty-plugins
+==============
+
+Smarty plugins
